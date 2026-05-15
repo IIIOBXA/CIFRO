@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Учёт заказов — мебель{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <a class="logo" href="{% url 'dashboard' %}">Мебель — учёт заказов</a>
+    <div class="user-bar">
+      {% if user.is_authenticated %}
+        Вы вошли как <strong>{{ user.get_username }}</strong> ·
+        <a href="{% url 'logout' %}">Выйти</a>
+      {% else %}
+        <a href="{% url 'login' %}">Войти в программу</a>
+      {% endif %}
+    </div>
+  </div>
+  {% if user.is_authenticated %}
+  <nav>
+    <a href="{% url 'dashboard' %}">🏠 Главная</a>
+    <a href="{% url 'order-list' %}">📋 Заказы</a>
+    <a href="{% url 'order-create' %}">➕ Новый заказ</a>
+    <a href="{% url 'warehouse-requisition-list' %}">📦 Приём на склад</a>
+    <a href="{% url 'customer-list' %}">👤 Клиенты</a>
+    <a href="{% url 'help' %}">❓ Помощь</a>
+  </nav>
+  {% endif %}
+</header>
+<main>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

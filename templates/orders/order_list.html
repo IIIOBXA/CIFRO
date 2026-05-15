@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load order_ui %}
+{% block title %}Все заказы{% endblock %}
+{% block content %}
+<h1>Все заказы</h1>
+<p class="lead">Нажмите «Открыть», чтобы посмотреть заказ и посчитать материалы.</p>
+
+<p class="actions">
+  <a class="btn btn-primary btn-lg" href="{% url 'order-create' %}">➕ Записать новый заказ</a>
+</p>
+
+<div class="card">
+  {% if orders %}
+  <table>
+    <thead>
+      <tr>
+        <th>Номер</th>
+        <th>Клиент</th>
+        <th>Что делаем</th>
+        <th>Сколько</th>
+        <th>Этап</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>№ {{ o.pk }}</strong></td>
+        <td>{{ o.customer }}</td>
+        <td>{{ o.product_template.name }}</td>
+        <td>{{ o.quantity }} шт.</td>
+        <td>
+          <span class="status-badge {{ o.status|status_css }}">{{ o.get_status_display }}</span>
+        </td>
+        <td><a class="btn btn-primary" href="{% url 'order-detail' o.pk %}">Открыть</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="box-info">
+    <p><strong>Заказов пока нет.</strong></p>
+    <p>Нажмите кнопку «Записать новый заказ» выше.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

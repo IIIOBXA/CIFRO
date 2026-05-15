@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Приём по заявке №{{ requisition.pk }}{% endblock %}
+{% block content %}
+<h1>Принять материалы на склад</h1>
+
+<div class="card">
+  <p><strong>Заявка:</strong> {{ requisition.title|default:"Без названия" }} №{{ requisition.pk }}</p>
+  <p><strong>Статус заявки:</strong> {{ requisition.get_status_display }}</p>
+  {% if requisition.order %}
+  <p><strong>Для заказа:</strong> <a href="{% url 'order-detail' requisition.order_id %}">№{{ requisition.order_id }}</a> — {{ requisition.order.customer }}</p>
+  {% endif %}
+</div>
+
+<div class="box-info">
+  Впишите, <strong>сколько реально привезли</strong> по каждой строке (можно меньше, чем в заявке — остаток примете позже).
+  Поля уже подставлены «сколько осталось принять». Если по позиции ничего не привезли — поставьте 0.
+</div>
+
+<div class="card">
+  <h2>Сводка по заявке</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Материал</th>
+        <th>Нужно было</th>
+        <th>Уже принято</th>
+        <th>Осталось</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in all_lines %}
+      <tr>
+        <td><strong>{{ line.material.name }}</strong></td>
+        <td>{{ line.quantity_required }} {{ line.material.get_unit_display }}</td>
+        <td>{{ line.quantity_received }}</td>
+        <td>
+          {% if line.quantity_remaining > 0 %}
+            <strong>{{ line.quantity_remaining }}</strong>
+          {% else %}
+            <span class="muted">всё принято ✓</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if form.fields %}
+<div class="card">
+  <h2>Записать приход сейчас</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+      {% if form.location.help_text %}<p class="help">{{ form.location.help_text }}</p>{% endif %}
+      {{ form.location }}
+    </div>
+    {% for field in form %}
+      {% if field.name != "location" %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+        {{ field }}
+        {% for err in field.errors %}<p class="error">{{ err }}</p>{% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+    <div class="actions" style="margin-top:1.5rem;">
+      <button type="submit" class="btn btn-primary btn-lg">Записать приход на склад</button>
+      <a class="btn" href="{% url 'warehouse-requisition-list' %}">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<p class="actions">
+  {% if requisition.order_id %}
+  <a class="btn" href="{% url 'order-detail' requisition.order_id %}">К заказу №{{ requisition.order_id }}</a>
+  {% endif %}
+  <a class="btn" href="{% url 'warehouse-requisition-list' %}">К списку заявок</a>
+</p>
+{% endblock %}

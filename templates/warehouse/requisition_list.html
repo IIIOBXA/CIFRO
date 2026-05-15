@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Приём материалов на склад{% endblock %}
+{% block content %}
+<h1>Приём материалов на склад</h1>
+<p class="lead">Здесь принимают то, что привезли по заявке на закупку. После приёма остатки на складе обновятся сами.</p>
+
+<div class="box-info">
+  <strong>Как работать:</strong> найдите заявку в списке → «Принять на склад» → укажите, сколько привезли по каждой позиции → «Записать приход».
+</div>
+
+<div class="card">
+  {% if requisitions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Заявка</th>
+        <th>Заказ</th>
+        <th>Этап заявки</th>
+        <th>Что ждём</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in requisitions %}
+      <tr>
+        <td><strong>{{ r.title|default:"Заявка" }} №{{ r.pk }}</strong><br>
+          <span class="muted">{{ r.created_at|date:"d.m.Y" }}</span>
+        </td>
+        <td>
+          {% if r.order %}
+            <a href="{% url 'order-detail' r.order_id %}">Заказ №{{ r.order_id }}</a><br>
+            <span class="muted">{{ r.order.customer }}</span>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>{{ r.get_status_display }}</td>
+        <td>
+          <ul style="margin:0; padding-left:1.2rem;">
+            {% for line in r.lines.all %}
+              {% if line.quantity_remaining > 0 %}
+              <li>{{ line.material.name }} — ещё <strong>{{ line.quantity_remaining }}</strong> {{ line.material.get_unit_display }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </td>
+        <td>
+          <a class="btn btn-primary" href="{% url 'warehouse-requisition-receive' r.pk %}">Принять на склад</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="box-ok"><strong>Нет открытых заявок.</strong> Все материалы по заявкам уже приняты или заявок ещё не создавали.</p>
+  {% endif %}
+</div>
+
+<p class="actions">
+  <a class="btn" href="{% url 'dashboard' %}">На главную</a>
+  <a class="btn" href="{% url 'order-list' %}">К заказам</a>
+</p>
+{% endblock %}

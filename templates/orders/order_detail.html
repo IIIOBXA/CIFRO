@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load order_ui %}
+{% block title %}Заказ № {{ order.pk }}{% endblock %}
+{% block content %}
+<h1>Заказ № {{ order.pk }}</h1>
+
+<div class="card">
+  <p><strong>Клиент:</strong> {{ order.customer }}</p>
+  <p><strong>Что делаем:</strong> {{ order.product_template.name }}</p>
+  <p><strong>Сколько:</strong> {{ order.quantity }} шт.</p>
+  {% if order.internal_number %}
+  <p><strong>Номер в записи:</strong> {{ order.internal_number }}</p>
+  {% endif %}
+  {% if order.notes %}<p><strong>Заметки:</strong> {{ order.notes }}</p>{% endif %}
+  <p>
+    <strong>Этап:</strong>
+    <span class="status-badge {{ order.status|status_css }}">{{ order.get_status_display }}</span>
+  </p>
+  <p class="hint">{{ order.status|status_hint }}</p>
+</div>
+
+{% if show_calculate_button %}
+<div class="card box-ok">
+  <h2>Следующий шаг</h2>
+  <p>Программа посчитает материалы и проверит склад. Открытая заявка обновится, дубликат не создастся.</p>
+  <form method="post" action="{% url 'order-confirm' order.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-lg">Посчитать материалы и проверить склад</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Материалы по заказу</h2>
+  {% if plan.rows %}
+  <table>
+    <thead>
+      <tr><th>Материал</th><th>Нужно</th><th>На складе</th><th>Не хватает</th></tr>
+    </thead>
+    <tbody>
+      {% for row in plan.rows %}
+      <tr>
+        <td><strong>{{ row.material.name }}</strong><br><span class="muted">{{ row.material.sku }}</span></td>
+        <td>{{ row.required }} {{ row.material.get_unit_display }}</td>
+        <td>{{ row.on_hand }} {{ row.material.get_unit_display }}</td>
+        <td>
+          {% if row.shortage > 0 %}
+            <span class="num-warn">{{ row.shortage }} {{ row.material.get_unit_display }}</span>
+          {% else %}
+            <span class="num-ok">достаточно</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="box-warn">Спецификация не настроена — обратитесь к администратору.</p>
+  {% endif %}
+</div>
+
+{% if requisitions %}
+<div class="card">
+  <h2>Заявки на закупку</h2>
+  {% for r in requisitions %}
+  <div style="margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:2px solid var(--border);">
+    <p><strong>{{ r.title }}</strong> №{{ r.pk }} — {{ r.get_status_display }}</p>
+    <ul>
+      {% for line in r.lines.all %}
+      <li>
+        {{ line.material.name }}: заказано {{ line.quantity_required }},
+        принято {{ line.quantity_received }}
+        {% if line.quantity_remaining > 0 %}— ещё <strong>{{ line.quantity_remaining }}</strong>{% else %} ✓{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% if r.status != "received" %}
+    <a class="btn btn-primary" href="{% url 'warehouse-requisition-receive' r.pk %}">Принять на склад</a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<p class="actions">
+  <a class="btn" href="{% url 'order-list' %}">← К заказам</a>
+  <a class="btn" href="{% url 'warehouse-requisition-list' %}">Приём на склад</a>
+</p>
+{% endblock %}

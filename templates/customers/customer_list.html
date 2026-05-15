@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Клиенты{% endblock %}
+{% block content %}
+<h1>Клиенты</h1>
+<p class="lead">Справочник: кто уже заказывал. Здесь только просмотр.</p>
+
+<div class="box-info">
+  <strong>Как добавить нового клиента?</strong><br>
+  Попросите администратора: служебная панель → «Клиенты» → «Добавить».
+  Или позвоните тому, кто настраивал программу.
+</div>
+
+<div class="card">
+  {% if customers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Имя</th>
+        <th>Телефон</th>
+        <th>Организация</th>
+        <th>Почта</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in customers %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td>{{ c.phone }}</td>
+        <td>{{ c.organization|default:"—" }}</td>
+        <td>{{ c.email|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="box-warn">Клиентов пока нет. Добавьте первого через служебную панель администратора.</p>
+  {% endif %}
+</div>
+
+<p><a class="btn" href="{% url 'order-create' %}">Записать заказ</a></p>
+{% endblock %}

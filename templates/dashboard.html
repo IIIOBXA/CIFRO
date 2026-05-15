@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<h1>Главная страница</h1>
+<p class="lead">Заказы, закупки и склад — в одной программе.</p>
+
+{% if new_orders_count %}
+<div class="box-warn">
+  <strong>{{ new_orders_count }}</strong>
+  {% if new_orders_count == 1 %}заказ{% else %}заказов{% endif %}
+  без расчёта материалов — откройте и нажмите «Посчитать материалы».
+</div>
+{% endif %}
+
+{% if open_requisitions_count %}
+<div class="box-info">
+  <strong>{{ open_requisitions_count }}</strong>
+  {% if open_requisitions_count == 1 %}заявка ждёт{% else %}заявок ждут{% endif %}
+  приёма на склад.
+  <a href="{% url 'warehouse-requisition-list' %}">Перейти к приёму →</a>
+</div>
+{% endif %}
+
+<div class="actions">
+  <div class="action-card">
+    <div class="icon">➕</div>
+    <h2>Новый заказ</h2>
+    <a class="btn btn-primary" href="{% url 'order-create' %}">Записать</a>
+  </div>
+  <div class="action-card">
+    <div class="icon">📋</div>
+    <h2>Заказы</h2>
+    <a class="btn" href="{% url 'order-list' %}">Список</a>
+  </div>
+  <div class="action-card">
+    <div class="icon">📦</div>
+    <h2>Приём на склад</h2>
+    <a class="btn btn-primary" href="{% url 'warehouse-requisition-list' %}">Принять материалы</a>
+  </div>
+  <div class="action-card">
+    <div class="icon">👤</div>
+    <h2>Клиенты</h2>
+    <a class="btn" href="{% url 'customer-list' %}">Список</a>
+  </div>
+</div>
+
+<div class="card">
+  <p>Заказов: <strong>{{ orders_count }}</strong> · Клиентов: <strong>{{ customers_count }}</strong></p>
+</div>
+
+{% if open_requisitions %}
+<div class="card">
+  <h2>Ждут приёма на склад</h2>
+  <ul>
+    {% for r in open_requisitions %}
+    <li>
+      <a href="{% url 'warehouse-requisition-receive' r.pk %}">{{ r.title|default:"Заявка" }} №{{ r.pk }}</a>
+      {% if r.order %} (заказ №{{ r.order_id }}){% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Последние заказы</h2>
+  {% if recent_orders %}
+  <table>
+    <thead><tr><th>№</th><th>Клиент</th><th>Изделие</th><th>Этап</th><th></th></tr></thead>
+    <tbody>
+      {% for o in recent_orders %}
+      <tr>
+        <td><strong>{{ o.pk }}</strong></td>
+        <td>{{ o.customer }}</td>
+        <td>{{ o.product_template.name }}</td>
+        <td>{{ o.get_status_display }}</td>
+        <td><a class="btn btn-primary" href="{% url 'order-detail' o.pk %}">Открыть</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Заказов пока нет.</p>
+  {% endif %}
+</div>
+
+<p class="admin-link muted">Администратор: <a href="/admin/">служебная панель</a></p>
+{% endblock %}

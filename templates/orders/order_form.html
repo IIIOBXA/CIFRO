@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="box-info">
+  Заполните поля ниже и нажмите <strong>«Сохранить заказ»</strong>.
+  После сохранения откроется карточка заказа — там нужно будет нажать «Посчитать материалы».
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {% include "orders/_form_fields.html" %}
+    <div class="actions" style="margin-top:1.5rem;">
+      <button type="submit" class="btn btn-primary btn-lg">Сохранить заказ</button>
+      <a class="btn" href="{% url 'order-list' %}">Отмена — вернуться к списку</a>
+    </div>
+  </form>
+</div>
+
+<p class="muted">Нет нужного клиента или типа мебели? Попросите администратора добавить в <a href="/admin/">служебной панели</a>.</p>
+{% endblock %}
